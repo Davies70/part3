@@ -42,7 +42,7 @@ app.get('/api/persons', (request, response) => {
   response.json(data);
 });
 
-app.get('/', (request, response) => {
+app.get('/info', (request, response) => {
   response.send(
     `<p>Phonebook has info for ${data.length} people</p><p>${new Date()}</p>`
   );
@@ -88,7 +88,6 @@ app.post('/api/persons', (request, response) => {
 });
 
 const PORT = process.env.PORT || 3001;
-
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
