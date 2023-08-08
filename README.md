@@ -1,30 +1,82 @@
-# Fullstack Course
-This course serves as an introduction to modern web application development with JavaScript. The main focus is on building single page applications with ReactJS that use REST APIs built with Node.js. The course also contains a section on GraphQL, a modern alternative to REST APIs. The course covers testing, configuration and environment management, the use of databases for storing the application’s data amongst other things. The course is totally free of charge. You can get a certificate and even the University of Helsinki ECTS credits for free. The course is worth 5-14 credits, and the content is the same as in the Full stack course held at the Department of Computer Science at the University of Helsinki in Spring 2023. There is also an associated project that is worth 1-10 credits. Partners and affiliates of the course include Houston Inc, Terveystalo, Elisa, Unity Technologies and Konecranes. See here for guest lectures on course-related topics given by various experts from our partners and affiliates. Participants are expected to have good programming skills, basic knowledge of web programming and databases, and to know the basics of working with the Git version-control system. You are also expected to have perseverance and the ability for independent problem solving and information seeking. Part 0 of the course material goes through the content and conduct of the course in more detail. Make sure to read the material and instructions thoroughly. You can discuss the course and related topics in our dedicated group on Discord https://study.cs.helsinki.fi/discord/join/fullstack and on Telegram: https://t.me/fullstackcourse. Please join the conversation!
+# Fullstack PhoneBook Application
+Link: https://phonebook-6575.onrender.com/
 
-Part 0 Fundamentals of Web apps
+The code defines a RESTful API using Express.js for a phonebook application. It includes routes for getting all persons, getting a single person by ID, deleting a person by ID, and adding a new person. The API also includes middleware for handling CORS, parsing JSON, serving static files, and logging requests.
 
-Part 1 Introduction to React
+Example Usage
+// start the server
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
 
-Part 2 Communicating with server
+// get all persons
+app.get('/api/persons', (request, response) => {
+  response.json(data);
+});
 
-Part 3 Programming a server with NodeJS and Express
+// get a single person by ID
+app.get('/api/persons/:id', (request, response) => {
+  const id = Number(request.params.id);
+  const person = data.find((person) => person.id === id);
+  if (person) {
+    response.json(person);
+  } else {
+    response.status(404).end();
+  }
+});
 
-Part 4 Testing Express servers, user administration
+// delete a person by ID
+app.delete('/api/persons/:id', (request, response) => {
+  const id = Number(request.params.id);
+  data = data.filter((person) => person.id !== id);
+  response.status(204).end();
+});
 
-Part 5 Testing React apps
+// add a new person
+app.post('/api/persons', (request, response) => {
+  if (!request.body.name || !request.body.number) {
+    return response.status(400).json({
+      error: 'content missing',
+    });
+  }
+  const name = data.find((person) => person.name === request.body.name);
+  if (name) {
+    return response.status(400).json({
+      error: 'name must be unique',
+    });
+  }
 
-Part 6 Advanced state management
+  const person = {
+    id: Math.floor(Math.random() * 1000000),
+    name: request.body.name,
+    number: request.body.number,
+  };
+  data = [...data, person];
+  data.sort((a, b) => a.id - b.id);
+  response.json(person);
+});
+Full Explanation
+This code defines a RESTful API using Express.js for a phonebook application. The API includes the following routes:
 
-Part 7 React router, custom hooks, styling app with CSS and webpack
+GET /api/persons: Returns a JSON array of all persons in the phonebook.
+GET /api/persons/:id: Returns a JSON object for the person with the specified ID.
+DELETE /api/persons/:id: Deletes the person with the specified ID.
+POST /api/persons: Adds a new person to the phonebook.
+The API also includes middleware for handling CORS, parsing JSON, serving static files, and logging requests. The data variable is an array of objects representing the persons in the phonebook. Each object has an id, name, and number property.
 
-Part 8 GraphQL
+The GET /info route returns a simple HTML page with information about the number of persons in the phonebook and the current date.
 
-Part 9 TypeScript
+The POST /api/persons route checks that the request body contains name and number properties, and that the name property is unique. If these conditions are met, a new person object is created with a random id property, and added to the data array. The data array is then sorted by id. The new person object is returned as a JSON response.
 
-Part 10 React Native
+The DELETE /api/persons/:id route deletes the person with the specified id from the data array using the filter method. The response status is set to 204 (No Content).
 
-Part 11 CI/CD
+The GET /api/persons/:id route finds the person with the specified id in the data array using the find method. If the person is found, it is returned as a JSON response. Otherwise, the response status is set to 404 (Not Found).
 
-Part 12 Containers
+The GET /api/persons route simply returns the data array as a JSON response.
 
-Part 13 Using relational databases
+The middleware includes:
+
+cors: Enables Cross-Origin Resource Sharing (CORS) for the API.
+express.json: Parses JSON request bodies.
+express.static: Serves static files from the build directory.
+morgan: Logs HTTP requests using the Apache combined log format. The :bodyData token is defined to log the request body as JSON.

@@ -1,3 +1,69 @@
+/**
+ * This code defines a RESTful API using Express.js for a phonebook application.
+ * It includes routes for getting all persons, getting a single person by ID,
+ * deleting a person by ID, and adding a new person. It also includes middleware
+ * for handling CORS, parsing JSON, serving static files, and logging requests.
+ *
+ * Example Usage:
+ *
+ * // start the server
+ * app.listen(PORT, () => {
+ *   console.log(`Server running on port ${PORT}`);
+ * });
+ *
+ * // get all persons
+ * app.get('/api/persons', (request, response) => {
+ *   response.json(data);
+ * });
+ *
+ * // get a single person by ID
+ * app.get('/api/persons/:id', (request, response) => {
+ *   const id = Number(request.params.id);
+ *   const person = data.find((person) => person.id === id);
+ *   if (person) {
+ *     response.json(person);
+ *   } else {
+ *     response.status(404).end();
+ *   }
+ * });
+ *
+ * // delete a person by ID
+ * app.delete('/api/persons/:id', (request, response) => {
+ *   const id = Number(request.params.id);
+ *   data = data.filter((person) => person.id !== id);
+ *   response.status(204).end();
+ * });
+ *
+ * // add a new person
+ * app.post('/api/persons', (request, response) => {
+ *   if (!request.body.name || !request.body.number) {
+ *     return response.status(400).json({
+ *       error: 'content missing',
+ *     });
+ *   }
+ *   const name = data.find((person) => person.name === request.body.name);
+ *   if (name) {
+ *     return response.status(400).json({
+ *       error: 'name must be unique',
+ *     });
+ *   }
+ *
+ *   const person = {
+ *     id: Math.floor(Math.random() * 1000000),
+ *     name: request.body.name,
+ *     number: request.body.number,
+ *   };
+ *   data = [...data, person];
+ *   data.sort((a, b) => a.id - b.id);
+ *   response.json(person);
+ * });
+ *
+ * const PORT = process.env.PORT || 3001;
+ *
+ * app.listen(PORT, () => {
+ *   console.log(`Server running on port ${PORT}`);
+ * });
+ */
 let data = [
   {
     id: 1,
