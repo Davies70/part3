@@ -1,69 +1,6 @@
-/**
- * This code defines a RESTful API using Express.js for a phonebook application.
- * It includes routes for getting all persons, getting a single person by ID,
- * deleting a person by ID, and adding a new person. It also includes middleware
- * for handling CORS, parsing JSON, serving static files, and logging requests.
- *
- * Example Usage:
- *
- * // start the server
- * app.listen(PORT, () => {
- *   console.log(`Server running on port ${PORT}`);
- * });
- *
- * // get all persons
- * app.get('/api/persons', (request, response) => {
- *   response.json(data);
- * });
- *
- * // get a single person by ID
- * app.get('/api/persons/:id', (request, response) => {
- *   const id = Number(request.params.id);
- *   const person = data.find((person) => person.id === id);
- *   if (person) {
- *     response.json(person);
- *   } else {
- *     response.status(404).end();
- *   }
- * });
- *
- * // delete a person by ID
- * app.delete('/api/persons/:id', (request, response) => {
- *   const id = Number(request.params.id);
- *   data = data.filter((person) => person.id !== id);
- *   response.status(204).end();
- * });
- *
- * // add a new person
- * app.post('/api/persons', (request, response) => {
- *   if (!request.body.name || !request.body.number) {
- *     return response.status(400).json({
- *       error: 'content missing',
- *     });
- *   }
- *   const name = data.find((person) => person.name === request.body.name);
- *   if (name) {
- *     return response.status(400).json({
- *       error: 'name must be unique',
- *     });
- *   }
- *
- *   const person = {
- *     id: Math.floor(Math.random() * 1000000),
- *     name: request.body.name,
- *     number: request.body.number,
- *   };
- *   data = [...data, person];
- *   data.sort((a, b) => a.id - b.id);
- *   response.json(person);
- * });
- *
- * const PORT = process.env.PORT || 3001;
- *
- * app.listen(PORT, () => {
- *   console.log(`Server running on port ${PORT}`);
- * });
- */
+// Here is an enhanced and improved version of the 'code_under_test' code snippet:
+
+// Define the initial data array
 let data = [
   {
     id: 1,
@@ -87,15 +24,18 @@ let data = [
   },
 ];
 
+// Import required modules
 const express = require('express');
 const app = express();
-
-// middlewares
 const cors = require('cors');
+const morgan = require('morgan');
+
+// Use middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.static('build'));
-const morgan = require('morgan');
+
+// Define custom morgan token for logging request body data
 morgan.token('bodyData', (request, response) => {
   return JSON.stringify(request.body);
 });
@@ -105,16 +45,19 @@ app.use(
   )
 );
 
+// Get all persons
 app.get('/api/persons', (request, response) => {
   response.json(data);
 });
 
+// Get information about the phonebook
 app.get('/info', (request, response) => {
   response.send(
     `<p>Phonebook has info for ${data.length} people</p><p>${new Date()}</p>`
   );
 });
 
+// Get a single person by ID
 app.get('/api/persons/:id', (request, response) => {
   const id = Number(request.params.id);
   const person = data.find((person) => person.id === id);
@@ -125,37 +68,44 @@ app.get('/api/persons/:id', (request, response) => {
   }
 });
 
+// Delete a person by ID
 app.delete('/api/persons/:id', (request, response) => {
   const id = Number(request.params.id);
   data = data.filter((person) => person.id !== id);
   response.status(204).end();
 });
 
+// Add a new person
 app.post('/api/persons', (request, response) => {
-  if (!request.body.name || !request.body.number) {
+  const { name, number } = request.body;
+
+  if (!name || !number) {
     return response.status(400).json({
-      error: 'content missing',
+      error: 'Name or number is missing',
     });
   }
-  const name = data.find((person) => person.name === request.body.name);
-  if (name) {
+
+  const existingPerson = data.find((person) => person.name === name);
+  if (existingPerson) {
     return response.status(400).json({
-      error: 'name must be unique',
+      error: 'Name must be unique',
     });
   }
 
   const person = {
     id: Math.floor(Math.random() * 1000000),
-    name: request.body.name,
-    number: request.body.number,
+    name,
+    number,
   };
-  data = [...data, person];
-  data.sort((a, b) => a.id - b.id);
+
+  data.push(person);
   response.json(person);
 });
 
+// Set the port
 const PORT = process.env.PORT || 3001;
 
+// Start the server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
