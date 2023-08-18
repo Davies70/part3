@@ -1,38 +1,35 @@
-// Here is an enhanced and improved version of the 'code_under_test' code snippet:
-
-// Define the initial data array
-let data = [
-  {
-    id: 1,
-    name: 'Arto Hellas',
-    number: '040-123456',
-  },
-  {
-    id: 2,
-    name: 'Ada Lovelace',
-    number: '39-44-5323523',
-  },
-  {
-    id: 3,
-    name: 'Dan Abramov',
-    number: '12-43-234345',
-  },
-  {
-    id: 4,
-    name: 'Mary Poppendieck',
-    number: '39-23-6423122',
-  },
-];
-
 // Import required modules
+require('dotenv').config();
+const Person = require('./models/person');
 const express = require('express');
 const app = express();
 const cors = require('cors');
 const morgan = require('morgan');
 
+const requestLogger = (request, response, next) => {
+  console.log('Method:', request.method);
+  console.log('Path:', request.path);
+  console.log('Body:', request.body);
+  console.log('---');
+  next();
+};
+
+const errorHandler = (error, request, response, next) => {
+  console.log(error.message);
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' });
+  }
+  next(error);
+};
+
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: 'unknown endpoint' });
+};
+
 // Use middleware
 app.use(cors());
 app.use(express.json());
+app.use(requestLogger);
 app.use(express.static('build'));
 
 // Define custom morgan token for logging request body data
@@ -47,32 +44,47 @@ app.use(
 
 // Get all persons
 app.get('/api/persons', (request, response) => {
-  response.json(data);
+  Person.find({}).then((persons) => response.json(persons));
 });
 
 // Get information about the phonebook
-app.get('/info', (request, response) => {
-  response.send(
-    `<p>Phonebook has info for ${data.length} people</p><p>${new Date()}</p>`
-  );
-});
-
-// Get a single person by ID
-app.get('/api/persons/:id', (request, response) => {
-  const id = Number(request.params.id);
-  const person = data.find((person) => person.id === id);
-  if (person) {
-    response.json(person);
-  } else {
-    response.status(404).end();
+app.get('/info', async (request, response) => {
+  try {
+    const count = await Person.countDocuments();
+    response.send(
+      `<p>Phonebook has info for ${count} people</p><p>${new Date()}</p>`
+    );
+  } catch (err) {
+    console.log('Error', err);
   }
 });
 
+// Get a single person by ID
+app.get('/api/persons/:id', (request, response, next) => {
+  const id = request.params.id;
+  // Find one document with that specific _id and send it back to client as json object
+  Person.findById(id)
+    .then((person) => {
+      if (person) {
+        response.json(person);
+      } else {
+        response.status(404).end();
+      }
+    })
+    .catch((error) => {
+      next(error);
+    });
+});
+
 // Delete a person by ID
-app.delete('/api/persons/:id', (request, response) => {
-  const id = Number(request.params.id);
-  data = data.filter((person) => person.id !== id);
-  response.status(204).end();
+app.delete('/api/persons/:id', (request, response, next) => {
+  const id = request.params.id;
+  Person.findByIdAndDelete(id)
+    .then((result) => {
+      console.log(`deleted ${result.name} with id ${id}`);
+      return response.status(204).end();
+    })
+    .catch((error) => next(error));
 });
 
 // Add a new person
@@ -84,26 +96,43 @@ app.post('/api/persons', (request, response) => {
       error: 'Name or number is missing',
     });
   }
+  const person = new Person({
+    name,
+    number,
+  });
 
-  const existingPerson = data.find((person) => person.name === name);
-  if (existingPerson) {
+  person
+    .save()
+    .then((savedPerson) => response.json(savedPerson))
+    .then(console.log(`added ${name} and ${number}`));
+});
+
+//Update an existing person
+app.put('/api/persons/:id', (request, response, next) => {
+  const id = request.params.id;
+  const { name, number } = request.body;
+  // Check that the body contains all required fields before updating anything!
+  if (!name || !number) {
     return response.status(400).json({
-      error: 'Name must be unique',
+      error: 'Name or number is missing',
     });
   }
 
   const person = {
-    id: Math.floor(Math.random() * 1000000),
     name,
     number,
   };
 
-  data.push(person);
-  response.json(person);
+  Person.findByIdAndUpdate(id, person, { new: true })
+    .then((updatedPerson) => response.json(updatedPerson))
+    .catch((error) => next(error));
 });
 
+app.use(unknownEndpoint);
+app.use(errorHandler);
+
 // Set the port
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT;
 
 // Start the server
 app.listen(PORT, () => {
