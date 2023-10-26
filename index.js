@@ -138,7 +138,7 @@ app.use(unknownEndpoint);
 app.use(errorHandler);
 
 // Set the port
-const PORT = process.env.PORT || 3001ang;
+const PORT = process.env.PORT || 3001;
 
 // Start the server
 app.listen(PORT, () => {
