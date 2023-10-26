@@ -90,7 +90,7 @@ app.delete('/api/persons/:id', (request, response, next) => {
 });
 
 // Add a new person
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
   const { name, number } = request.body;
 
   if (!name || !number) {
@@ -106,7 +106,8 @@ app.post('/api/persons', (request, response) => {
   person
     .save()
     .then((savedPerson) => response.json(savedPerson))
-    .then(console.log(`added ${name} and ${number}`));
+    .then(console.log(`added ${name} and ${number}`))
+    .catch((error) => next(error));
 });
 
 //Update an existing person
@@ -130,7 +131,10 @@ app.put('/api/persons/:id', (request, response, next) => {
     .catch((error) => next(error));
 });
 
+// Adds the middleware function 'unknownEndpoint' to the Express application.
 app.use(unknownEndpoint);
+
+// Adds an error handling middleware to the Express application.
 app.use(errorHandler);
 
 // Set the port
